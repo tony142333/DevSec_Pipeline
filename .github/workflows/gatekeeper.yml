@@ -67,3 +67,6 @@ jobs:
         run: |
           # We use curl to hit the specific trigger URL
           curl -X POST "$JENKINS_URL/job/DevSecOps-Pipeline/build?token=$TOKEN"
+          
+          
+          
