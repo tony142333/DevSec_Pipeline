@@ -49,3 +49,21 @@ jobs:
           trivy-config: trivy.yaml
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
+
+
+  # ... (your existing jobs: quality-check, security-check) ...
+
+  # NEW JOB: WAKE UP JENKINS
+  trigger-jenkins:
+    needs: [quality-check, security-check] # ONLY runs if both previous checks pass
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Jenkins Build
+        env:
+          # This is the ngrok URL you created earlier
+          JENKINS_URL: "https://maximiliano-unimperialistic-nonantagonistically.ngrok-free.dev"
+          USER: "tarun"  # Your Jenkins Username
+          TOKEN: "StartBuildNow" # The token you just set in Jenkins
+        run: |
+          # We use curl to hit the specific trigger URL
+          curl -X POST "$JENKINS_URL/job/DevSecOps-Pipeline/build?token=$TOKEN"
