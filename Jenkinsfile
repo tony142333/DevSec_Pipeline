@@ -2,8 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // Since you are on Windows, we access SonarQube via localhost
-        SONAR_HOST_URL = 'http://localhost:9000'
+        // 1. UNLOCK THE VAULT: Get the real secret token and save it to 'SONAR_AUTH_TOKEN'
+        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
+
+        // 2. USE 127.0.0.1: Safer than 'localhost' for Windows Services
+        SONAR_HOST_URL = 'http://127.0.0.1:9000'
         IMAGE_NAME = 'fortress-app:latest'
     }
 
@@ -13,15 +16,15 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'SonarQubeScanner'
-                    // We use the name you gave in Manage Jenkins (likely 'sonar-server')
                     withSonarQubeEnv('sonar-server') {
-                        // WINDOWS COMMAND: uses 'bat' and points to the .bat executable
+                        // WINDOWS COMMAND
+                        // Note: We use %SONAR_AUTH_TOKEN% so the batch script reads the secret safely
                         bat """
                             "${scannerHome}\\bin\\sonar-scanner.bat" \
                             -Dsonar.projectKey=DevSecOps-Pipeline \
                             -Dsonar.sources=PHASE1 \
-                            -Dsonar.host.url=http://localhost:9000 \
-                            -Dsonar.login=sonarqube-token
+                            -Dsonar.host.url=http://127.0.0.1:9000 \
+                            -Dsonar.login=%SONAR_AUTH_TOKEN%
                         """
                     }
                 }
@@ -34,7 +37,6 @@ pipeline {
                 script {
                     echo 'Building Docker Image...'
                     dir('PHASE1') {
-                        // WINDOWS COMMAND: uses 'bat'
                         bat "docker build -t ${IMAGE_NAME} ."
                     }
                 }
@@ -42,6 +44,3 @@ pipeline {
         }
     }
 }
-
-
-
