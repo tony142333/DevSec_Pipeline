@@ -49,6 +49,3 @@ jobs:
           trivy-config: trivy.yaml
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-
-
-
